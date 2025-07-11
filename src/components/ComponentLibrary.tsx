@@ -1,16 +1,16 @@
 
 import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
-import { Type, Image, MousePointer, Minus, Space, Header, Footer } from 'lucide-react';
+import { Type, Image, MousePointer, Minus, Space, Heading, AlignLeft } from 'lucide-react';
 
 const components = [
-  { id: 'header', name: 'Header', icon: Header, description: 'Titel sectie' },
+  { id: 'header', name: 'Header', icon: Heading, description: 'Titel sectie' },
   { id: 'text', name: 'Tekst', icon: Type, description: 'Tekst blok' },
   { id: 'image', name: 'Afbeelding', icon: Image, description: 'Afbeelding' },
   { id: 'button', name: 'Knop', icon: MousePointer, description: 'Call-to-action knop' },
   { id: 'divider', name: 'Scheiding', icon: Minus, description: 'Horizontale lijn' },
   { id: 'spacer', name: 'Ruimte', icon: Space, description: 'Lege ruimte' },
-  { id: 'footer', name: 'Footer', icon: Footer, description: 'Voettekst' },
+  { id: 'footer', name: 'Footer', icon: AlignLeft, description: 'Voettekst' },
 ];
 
 const ComponentLibrary = () => {
