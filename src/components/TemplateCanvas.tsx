@@ -101,7 +101,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
 
       case 'card':
         return (
-          <Droppable droppableId={`card-${component.id}`} type="CARD_ITEM">
+          <Droppable droppableId={`card-${component.id}`}>
             {(provided, snapshot) => (
               <div 
                 style={baseStyles} 
@@ -161,7 +161,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
       case 'grid':
         const gridColumns = component.gridColumns || 2;
         return (
-          <Droppable droppableId={`grid-${component.id}`} type="GRID_ITEM">
+          <Droppable droppableId={`grid-${component.id}`}>
             {(provided, snapshot) => (
               <div 
                 style={{
@@ -306,7 +306,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
 
   return (
     <div className="min-h-[600px] bg-white">
-      <Droppable droppableId="template-canvas" type="COMPONENT">
+      <Droppable droppableId="template-canvas">
         {(provided, snapshot) => (
           <div
             {...provided.droppableProps}

@@ -29,10 +29,10 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
 
     const { source, destination } = result;
 
+    // Adding new component from library to main canvas
     if (source.droppableId === 'component-library' && destination.droppableId === 'template-canvas') {
-      // Add new component from library to canvas
       const newComponent: TemplateComponent = {
-        id: `component-${Date.now()}`,
+        id: `component-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: result.draggableId as TemplateComponent['type'],
         content: getDefaultContent(result.draggableId as TemplateComponent['type']),
         styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
@@ -41,76 +41,122 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
       const newComponents = [...template.components];
       newComponents.splice(destination.index, 0, newComponent);
       onTemplateUpdate({ ...template, components: newComponents });
-    } else if (source.droppableId === 'template-canvas' && destination.droppableId === 'template-canvas') {
-      // Reorder components within canvas
+      return;
+    }
+
+    // Reordering components within main canvas
+    if (source.droppableId === 'template-canvas' && destination.droppableId === 'template-canvas') {
       const newComponents = Array.from(template.components);
       const [reorderedItem] = newComponents.splice(source.index, 1);
       newComponents.splice(destination.index, 0, reorderedItem);
       onTemplateUpdate({ ...template, components: newComponents });
-    } else if (source.droppableId === 'component-library' && destination.droppableId.startsWith('grid-')) {
-      // Add component to grid
+      return;
+    }
+
+    // Adding component from library to grid
+    if (source.droppableId === 'component-library' && destination.droppableId.startsWith('grid-')) {
       const gridId = destination.droppableId.replace('grid-', '');
       const newComponent: TemplateComponent = {
-        id: `component-${Date.now()}`,
+        id: `component-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: result.draggableId as TemplateComponent['type'],
         content: getDefaultContent(result.draggableId as TemplateComponent['type']),
         styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
       };
 
-      const newComponents = template.components.map(comp => {
-        if (comp.id === gridId) {
-          const gridItems = comp.gridItems || [];
-          gridItems.splice(destination.index, 0, newComponent);
-          return { ...comp, gridItems };
-        }
-        return comp;
-      });
+      const updateGridItems = (components: TemplateComponent[]): TemplateComponent[] => {
+        return components.map(comp => {
+          if (comp.id === gridId) {
+            const gridItems = comp.gridItems || [];
+            gridItems.splice(destination.index, 0, newComponent);
+            return { ...comp, gridItems };
+          }
+          if (comp.gridItems) {
+            return { ...comp, gridItems: updateGridItems(comp.gridItems) };
+          }
+          return comp;
+        });
+      };
+
+      const newComponents = updateGridItems(template.components);
       onTemplateUpdate({ ...template, components: newComponents });
-    } else if (source.droppableId === 'component-library' && destination.droppableId.startsWith('card-')) {
-      // Add component to card
+      return;
+    }
+
+    // Adding component from library to card
+    if (source.droppableId === 'component-library' && destination.droppableId.startsWith('card-')) {
       const cardId = destination.droppableId.replace('card-', '');
       const newComponent: TemplateComponent = {
-        id: `component-${Date.now()}`,
+        id: `component-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         type: result.draggableId as TemplateComponent['type'],
         content: getDefaultContent(result.draggableId as TemplateComponent['type']),
         styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
       };
 
-      const newComponents = template.components.map(comp => {
-        if (comp.id === cardId) {
-          const gridItems = comp.gridItems || [];
-          gridItems.splice(destination.index, 0, newComponent);
-          return { ...comp, gridItems };
-        }
-        return comp;
-      });
+      const updateCardItems = (components: TemplateComponent[]): TemplateComponent[] => {
+        return components.map(comp => {
+          if (comp.id === cardId) {
+            const gridItems = comp.gridItems || [];
+            gridItems.splice(destination.index, 0, newComponent);
+            return { ...comp, gridItems };
+          }
+          if (comp.gridItems) {
+            return { ...comp, gridItems: updateCardItems(comp.gridItems) };
+          }
+          return comp;
+        });
+      };
+
+      const newComponents = updateCardItems(template.components);
       onTemplateUpdate({ ...template, components: newComponents });
-    } else if (destination.droppableId.startsWith('grid-') && source.droppableId.startsWith('grid-')) {
-      // Reorder within grid
+      return;
+    }
+
+    // Reordering within grid
+    if (destination.droppableId.startsWith('grid-') && source.droppableId.startsWith('grid-')) {
       const gridId = destination.droppableId.replace('grid-', '');
-      const newComponents = template.components.map(comp => {
-        if (comp.id === gridId) {
-          const gridItems = Array.from(comp.gridItems || []);
-          const [reorderedItem] = gridItems.splice(source.index, 1);
-          gridItems.splice(destination.index, 0, reorderedItem);
-          return { ...comp, gridItems };
-        }
-        return comp;
-      });
+      
+      const updateGridReorder = (components: TemplateComponent[]): TemplateComponent[] => {
+        return components.map(comp => {
+          if (comp.id === gridId) {
+            const gridItems = Array.from(comp.gridItems || []);
+            const [reorderedItem] = gridItems.splice(source.index, 1);
+            gridItems.splice(destination.index, 0, reorderedItem);
+            return { ...comp, gridItems };
+          }
+          if (comp.gridItems) {
+            return { ...comp, gridItems: updateGridReorder(comp.gridItems) };
+          }
+          return comp;
+        });
+      };
+
+      const newComponents = updateGridReorder(template.components);
       onTemplateUpdate({ ...template, components: newComponents });
-    } else if (destination.droppableId.startsWith('card-') && source.droppableId.startsWith('card-')) {
-      // Reorder within card
+      return;
+    }
+
+    // Reordering within card
+    if (destination.droppableId.startsWith('card-') && source.droppableId.startsWith('card-')) {
       const cardId = destination.droppableId.replace('card-', '');
-      const newComponents = template.components.map(comp => {
-        if (comp.id === cardId) {
-          const gridItems = Array.from(comp.gridItems || []);
-          const [reorderedItem] = gridItems.splice(source.index, 1);
-          gridItems.splice(destination.index, 0, reorderedItem);
-          return { ...comp, gridItems };
-        }
-        return comp;
-      });
+      
+      const updateCardReorder = (components: TemplateComponent[]): TemplateComponent[] => {
+        return components.map(comp => {
+          if (comp.id === cardId) {
+            const gridItems = Array.from(comp.gridItems || []);
+            const [reorderedItem] = gridItems.splice(source.index, 1);
+            gridItems.splice(destination.index, 0, reorderedItem);
+            return { ...comp, gridItems };
+          }
+          if (comp.gridItems) {
+            return { ...comp, gridItems: updateCardReorder(comp.gridItems) };
+          }
+          return comp;
+        });
+      };
+
+      const newComponents = updateCardReorder(template.components);
       onTemplateUpdate({ ...template, components: newComponents });
+      return;
     }
   };
 
