@@ -1,10 +1,9 @@
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Trash2 } from 'lucide-react';
-import { TemplateComponent } from './TemplateEditor';
+import { TemplateComponent } from '../types/template';
 
 interface PropertyEditorProps {
   component: TemplateComponent | null;

@@ -1,34 +1,29 @@
+
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { Download, FileText, Save, Eye } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { Card } from '@/components/ui/card';
+import { Eye } from 'lucide-react';
 import ComponentLibrary from './ComponentLibrary';
 import TemplateCanvas from './TemplateCanvas';
 import PropertyEditor from './PropertyEditor';
+import TemplateHeader from './TemplateHeader';
 import { exportToPDF, exportToHTML } from '../utils/exportUtils';
+import { Template, TemplateComponent } from '../types/template';
 
-export interface TemplateComponent {
-  id: string;
-  type: 'text' | 'image' | 'button' | 'divider' | 'spacer' | 'header' | 'footer';
-  content: string;
-  styles: {
-    fontSize?: string;
-    color?: string;
-    backgroundColor?: string;
-    padding?: string;
-    textAlign?: 'left' | 'center' | 'right';
-    fontWeight?: string;
-    borderRadius?: string;
-    width?: string;
-    height?: string;
-  };
+interface TemplateEditorProps {
+  template: Template;
+  onTemplateUpdate: (template: Template) => void;
+  onSave: () => void;
+  onBackToList: () => void;
 }
 
-const TemplateEditor = () => {
-  const [components, setComponents] = useState<TemplateComponent[]>([]);
+const TemplateEditor: React.FC<TemplateEditorProps> = ({
+  template,
+  onTemplateUpdate,
+  onSave,
+  onBackToList
+}) => {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
-  const [templateName, setTemplateName] = useState('Nieuwe Template');
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -44,15 +39,15 @@ const TemplateEditor = () => {
         styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
       };
 
-      const newComponents = [...components];
+      const newComponents = [...template.components];
       newComponents.splice(destination.index, 0, newComponent);
-      setComponents(newComponents);
+      onTemplateUpdate({ ...template, components: newComponents });
     } else if (source.droppableId === 'template-canvas' && destination.droppableId === 'template-canvas') {
       // Reorder components within canvas
-      const newComponents = Array.from(components);
+      const newComponents = Array.from(template.components);
       const [reorderedItem] = newComponents.splice(source.index, 1);
       newComponents.splice(destination.index, 0, reorderedItem);
-      setComponents(newComponents);
+      onTemplateUpdate({ ...template, components: newComponents });
     }
   };
 
@@ -101,70 +96,46 @@ const TemplateEditor = () => {
   };
 
   const handleUpdateComponent = (id: string, updates: Partial<TemplateComponent>) => {
-    setComponents(prev => prev.map(comp => 
+    const newComponents = template.components.map(comp => 
       comp.id === id ? { ...comp, ...updates } : comp
-    ));
+    );
+    onTemplateUpdate({ ...template, components: newComponents });
   };
 
   const handleDeleteComponent = (id: string) => {
-    setComponents(prev => prev.filter(comp => comp.id !== id));
+    const newComponents = template.components.filter(comp => comp.id !== id);
+    onTemplateUpdate({ ...template, components: newComponents });
     if (selectedComponent === id) {
       setSelectedComponent(null);
     }
   };
 
   const selectedComponentData = selectedComponent 
-    ? components.find(c => c.id === selectedComponent) 
+    ? template.components.find(c => c.id === selectedComponent) 
     : null;
 
   const handleExportPDF = async () => {
-    await exportToPDF(components, templateName);
+    await exportToPDF(template.components, template.name);
   };
 
   const handleExportHTML = () => {
-    exportToHTML(components, templateName);
+    exportToHTML(template.components, template.name);
   };
 
-  const handleSaveTemplate = () => {
-    const templateData = {
-      name: templateName,
-      components: components,
-      createdAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem(`template-${Date.now()}`, JSON.stringify(templateData));
-    console.log('Template opgeslagen!');
+  const handleTemplateNameChange = (name: string) => {
+    onTemplateUpdate({ ...template, name });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="bg-white border-b shadow-sm p-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div>
-            <input
-              type="text"
-              value={templateName}
-              onChange={(e) => setTemplateName(e.target.value)}
-              className="text-xl font-semibold bg-transparent border-none outline-none focus:bg-gray-50 rounded px-2"
-            />
-          </div>
-          
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleSaveTemplate}>
-              <Save className="w-4 h-4 mr-2" />
-              Opslaan
-            </Button>
-            <Button variant="outline" onClick={handleExportHTML}>
-              <FileText className="w-4 h-4 mr-2" />
-              HTML Export
-            </Button>
-            <Button onClick={handleExportPDF} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-              <Download className="w-4 h-4 mr-2" />
-              PDF Export
-            </Button>
-          </div>
-        </div>
-      </div>
+      <TemplateHeader
+        template={template}
+        onTemplateNameChange={handleTemplateNameChange}
+        onSave={onSave}
+        onExportHTML={handleExportHTML}
+        onExportPDF={handleExportPDF}
+        onBackToList={onBackToList}
+      />
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 p-6">
@@ -184,7 +155,7 @@ const TemplateEditor = () => {
                 </div>
               </div>
               <TemplateCanvas 
-                components={components}
+                components={template.components}
                 selectedComponent={selectedComponent}
                 onSelectComponent={setSelectedComponent}
                 onUpdateComponent={handleUpdateComponent}

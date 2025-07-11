@@ -2,7 +2,7 @@
 import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Trash2, Edit } from 'lucide-react';
-import { TemplateComponent } from './TemplateEditor';
+import { TemplateComponent } from '../types/template';
 import ImageUpload from './ImageUpload';
 
 interface TemplateCanvasProps {
