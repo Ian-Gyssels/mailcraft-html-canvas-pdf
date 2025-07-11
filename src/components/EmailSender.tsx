@@ -8,12 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { Template } from '../types/template';
 import { useTranslation } from '../hooks/useTranslation';
-import emailjs from '@emailjs/browser';
-
-// Gmail/EmailJS Configuration
-const EMAILJS_SERVICE_ID = 'gmail'; // You'll need to configure this in EmailJS
-const EMAILJS_TEMPLATE_ID = 'template_email'; // You'll need to create this template
-const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY'; // Get this from EmailJS dashboard
+// Email configuration - replace with your backend endpoint
+const EMAIL_API_ENDPOINT = '/api/send-email'; // Your backend email endpoint
 
 interface EmailSenderProps {
   template: Template;
@@ -87,24 +83,21 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
     try {
       const templateHTML = generateTemplateHTML();
       
-      // Initialize EmailJS (you only need to do this once in your app)
-      emailjs.init(EMAILJS_PUBLIC_KEY);
-      
-      // Send email using EmailJS
-      const result = await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        {
-          to_email: emailData.to,
+      // Send email using your backend API
+      const response = await fetch(EMAIL_API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: emailData.to,
           subject: emailData.subject,
-          message: emailData.message,
-          template_html: templateHTML,
-          template_name: template.name,
-          from_name: 'Template Builder App'
-        }
-      );
+          html: templateHTML, // Send the template as HTML content
+          text: emailData.message // Optional plain text fallback
+        })
+      });
 
-      if (result.status === 200) {
+      if (response.ok) {
         toast({
           title: "Email Sent Successfully",
           description: `Template sent to ${emailData.to}`,
@@ -123,7 +116,7 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
       console.error("Error sending email:", error);
       toast({
         title: "Error",
-        description: "Failed to send email. Please check your configuration and try again.",
+        description: "Failed to send email. Please check your backend configuration.",
         variant: "destructive",
       });
     } finally {
@@ -179,13 +172,8 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
           
           <div className="bg-blue-50 p-3 rounded-lg">
             <p className="text-sm text-blue-700">
-              <strong>Setup Required:</strong> To use Gmail sending, you need to:
+              <strong>Backend Required:</strong> You need to create a backend endpoint at <code>/api/send-email</code> that accepts POST requests with email data.
             </p>
-            <ol className="text-xs text-blue-600 mt-1 ml-4 list-decimal">
-              <li>Sign up at <a href="https://emailjs.com" target="_blank" className="underline">EmailJS.com</a></li>
-              <li>Connect your Gmail account</li>
-              <li>Update the configuration in EmailSender.tsx</li>
-            </ol>
           </div>
           
           <div className="flex gap-2">

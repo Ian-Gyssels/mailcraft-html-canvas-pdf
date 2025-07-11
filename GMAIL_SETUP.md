@@ -1,45 +1,59 @@
-## Gmail Email Integration Setup
+# Backend Email Setup
 
-To use Gmail for sending template emails, follow these steps:
+This app uses a backend API for sending emails with the template as HTML content.
 
-### 1. Create EmailJS Account
-1. Go to [EmailJS.com](https://emailjs.com) and sign up
-2. Create a new service and select Gmail
-3. Connect your Gmail account
+## Backend Implementation
 
-### 2. Configure EmailJS
-1. In your EmailJS dashboard, note down:
-   - Service ID (usually 'gmail')
-   - Template ID (create a template)
-   - Public Key (from Account page)
+Create an endpoint at `/api/send-email` that accepts POST requests with:
 
-2. Update the configuration in `src/components/EmailSender.tsx`:
-```typescript
-const EMAILJS_SERVICE_ID = 'your_service_id';
-const EMAILJS_TEMPLATE_ID = 'your_template_id'; 
-const EMAILJS_PUBLIC_KEY = 'your_public_key';
+```json
+{
+  "to": "recipient@example.com",
+  "subject": "Email subject",
+  "html": "<html>...</html>",
+  "text": "Plain text fallback"
+}
 ```
 
-### 3. EmailJS Template
-Create a template in EmailJS with these variables:
-- `{{to_email}}` - Recipient email
-- `{{subject}}` - Email subject
-- `{{message}}` - Personal message
-- `{{template_html}}` - The template HTML
-- `{{template_name}}` - Template name
-- `{{from_name}}` - Sender name
+## Example Node.js/Express Backend
 
-### 4. Template Example
-```html
-Subject: {{subject}}
+```javascript
+const express = require('express');
+const nodemailer = require('nodemailer');
+const app = express();
 
-{{message}}
+app.use(express.json());
 
-Template: {{template_name}}
+const transporter = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: 'your-email@gmail.com',
+    pass: 'your-app-password' // Use Gmail App Password
+  }
+});
 
-{{{template_html}}}
-
-Sent from Template Builder App
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { to, subject, html, text } = req.body;
+    
+    await transporter.sendMail({
+      from: 'your-email@gmail.com',
+      to,
+      subject,
+      html,
+      text
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 ```
 
-This setup allows you to send emails directly through Gmail without needing your own email server!
+## Gmail App Password Setup
+
+1. Enable 2FA on your Gmail account
+2. Go to Google Account settings
+3. Generate an App Password for "Mail"
+4. Use this password in your backend configuration
