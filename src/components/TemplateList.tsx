@@ -6,6 +6,7 @@ import { Plus, FileText, Trash2, Calendar, Edit } from 'lucide-react';
 import { Template } from '../types/template';
 import { useTranslation } from '../hooks/useTranslation';
 import LanguageSelector from './LanguageSelector';
+import AuthManager from './AuthManager';
 
 interface TemplateListProps {
   templates: Template[];
@@ -40,6 +41,7 @@ const TemplateList: React.FC<TemplateListProps> = ({
             <p className="text-gray-600">Beheer je email templates</p>
           </div>
           <div className="flex items-center gap-4">
+            <AuthManager />
             <LanguageSelector />
             <Button 
               onClick={onCreateNew}

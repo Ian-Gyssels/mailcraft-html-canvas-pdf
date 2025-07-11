@@ -4,6 +4,7 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Trash2, Edit } from 'lucide-react';
 import { TemplateComponent } from '../types/template';
 import ComponentRenderer from './canvas/ComponentRenderer';
+import DragHandle from './DragHandle';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface TemplateCanvasProps {
@@ -50,9 +51,15 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
                       snapshot.isDragging ? 'opacity-50' : ''
                     }`}
                   >
+                    {/* Drag Handle */}
+                    <div {...provided.dragHandleProps}>
+                      <DragHandle isDragging={snapshot.isDragging} />
+                    </div>
+                    
+                    {/* Component Content */}
                     <div
-                      {...provided.dragHandleProps}
                       onClick={() => onSelectComponent(component.id)}
+                      className="cursor-pointer"
                     >
                       <ComponentRenderer
                         component={component}

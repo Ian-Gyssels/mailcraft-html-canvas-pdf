@@ -18,6 +18,8 @@ export const useTranslation = () => {
 
   useEffect(() => {
     localStorage.setItem('locale', locale);
+    // Force re-render of components when language changes
+    window.dispatchEvent(new Event('languagechange'));
   }, [locale]);
 
   const t = (key: string): string => {

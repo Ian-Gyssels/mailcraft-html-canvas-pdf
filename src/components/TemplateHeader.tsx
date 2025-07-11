@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Download, FileText, Save, ArrowLeft } from 'lucide-react';
 import { Template } from '../types/template';
 import { useTranslation } from '../hooks/useTranslation';
+import EmailSender from './EmailSender';
 
 interface TemplateHeaderProps {
   template: Template;
@@ -40,6 +41,7 @@ const TemplateHeader: React.FC<TemplateHeaderProps> = ({
         </div>
         
         <div className="flex gap-2">
+          <EmailSender template={template} />
           <Button variant="outline" onClick={onSave}>
             <Save className="w-4 h-4 mr-2" />
             {t('templateHeader.save')}
