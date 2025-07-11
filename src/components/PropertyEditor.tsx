@@ -7,6 +7,8 @@ import ContentEditor from './property-editor/ContentEditor';
 import StyleEditor from './property-editor/StyleEditor';
 import LinkEditor from './property-editor/LinkEditor';
 import GridEditor from './property-editor/GridEditor';
+import { componentConfigs } from '../config/components';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface PropertyEditorProps {
   component: TemplateComponent | null;
@@ -19,10 +21,11 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
   onUpdateComponent,
   onDeleteComponent
 }) => {
+  const { t } = useTranslation();
   if (!component) {
     return (
       <div className="text-sm text-gray-500">
-        Selecteer een component om eigenschappen te bewerken
+        {t('propertyEditor.selectComponent')}
       </div>
     );
   }
@@ -51,7 +54,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="font-medium capitalize">{component.type}</h4>
+        <h4 className="font-medium">{t(`components.${component.type}.name`)}</h4>
         <Button
           variant="destructive"
           size="icon"

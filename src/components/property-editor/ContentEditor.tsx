@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import { TemplateComponent } from '../../types/template';
 import IconSelector from '../IconSelector';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface ContentEditorProps {
   component: TemplateComponent;
@@ -12,15 +13,17 @@ interface ContentEditorProps {
 }
 
 const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChange }) => {
+  const { t } = useTranslation();
+  
   const getContentPlaceholder = () => {
     switch (component.type) {
-      case 'quote': return 'Voer je citaat in...';
-      case 'video': return 'YouTube video URL';
-      case 'list': return 'Item 1\nItem 2\nItem 3';
-      case 'testimonial': return 'Klantrecensie tekst...';
-      case 'card': return 'Kaart inhoud...';
+      case 'quote': return t('propertyEditor.placeholders.enterQuote');
+      case 'video': return t('propertyEditor.placeholders.videoUrl');
+      case 'list': return t('propertyEditor.placeholders.listItems');
+      case 'testimonial': return t('propertyEditor.placeholders.testimonial');
+      case 'card': return t('propertyEditor.placeholders.cardContent');
       case 'icon': return 'star';
-      default: return 'Voer inhoud in...';
+      default: return t('propertyEditor.placeholders.enterContent');
     }
   };
 
@@ -35,12 +38,12 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChang
   if (component.type === 'image') {
     return (
       <div>
-        <label className="text-sm font-medium mb-2 block">Inhoud</label>
+        <label className="text-sm font-medium mb-2 block">{t('propertyEditor.content')}</label>
         <input
           type="url"
           value={component.content}
           onChange={(e) => onContentChange(e.target.value)}
-          placeholder="Afbeelding URL"
+          placeholder={t('propertyEditor.placeholders.imageUrl')}
           className="w-full px-3 py-2 border rounded-md text-sm"
         />
       </div>
@@ -50,12 +53,12 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChang
   if (component.type === 'video') {
     return (
       <div>
-        <label className="text-sm font-medium mb-2 block">Inhoud</label>
+        <label className="text-sm font-medium mb-2 block">{t('propertyEditor.content')}</label>
         <input
           type="url"
           value={component.content}
           onChange={(e) => onContentChange(e.target.value)}
-          placeholder="YouTube video URL"
+          placeholder={t('propertyEditor.placeholders.videoUrl')}
           className="w-full px-3 py-2 border rounded-md text-sm"
         />
       </div>
@@ -65,13 +68,13 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChang
   if (component.type === 'icon') {
     return (
       <div>
-        <label className="text-sm font-medium mb-2 block">Inhoud</label>
+        <label className="text-sm font-medium mb-2 block">{t('propertyEditor.content')}</label>
         <div className="space-y-2">
           <input
             type="text"
             value={component.content}
             onChange={(e) => onContentChange(e.target.value)}
-            placeholder="Lucide icon naam (bijv. star, heart)"
+            placeholder={t('propertyEditor.placeholders.iconName')}
             className="w-full px-3 py-2 border rounded-md text-sm"
           />
           <IconSelector
@@ -80,7 +83,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChang
           >
             <Button variant="outline" size="sm" className="w-full">
               <Search className="w-4 h-4 mr-2" />
-              Selecteer icoon
+              {t('propertyEditor.buttons.selectIcon')}
             </Button>
           </IconSelector>
         </div>
@@ -90,7 +93,7 @@ const ContentEditor: React.FC<ContentEditorProps> = ({ component, onContentChang
 
   return (
     <div>
-      <label className="text-sm font-medium mb-2 block">Inhoud</label>
+      <label className="text-sm font-medium mb-2 block">{t('propertyEditor.content')}</label>
       <Textarea
         value={component.content}
         onChange={(e) => onContentChange(e.target.value)}
