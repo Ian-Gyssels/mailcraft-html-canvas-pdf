@@ -60,6 +60,13 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
       case 'divider': return '';
       case 'spacer': return '';
       case 'footer': return 'Footer tekst';
+      case 'quote': return 'Dit is een inspirerend citaat';
+      case 'list': return 'Eerste item\nTweede item\nDerde item';
+      case 'card': return 'Kaart inhoud';
+      case 'testimonial': return 'Geweldige service! Zeer tevreden met het resultaat.';
+      case 'video': return 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+      case 'icon': return 'star';
+      case 'grid': return '';
       default: return '';
     }
   };
@@ -75,6 +82,14 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return { ...baseStyles, fontSize: '24px', fontWeight: 'bold', color: '#1f2937' };
       case 'text':
         return { ...baseStyles, fontSize: '16px', color: '#374151' };
+      case 'quote':
+        return { ...baseStyles, fontSize: '18px', color: '#4b5563', fontWeight: '300' };
+      case 'list':
+        return { ...baseStyles, fontSize: '16px', color: '#374151' };
+      case 'card':
+        return { ...baseStyles, backgroundColor: '#ffffff', borderRadius: '8px', border: '1px solid #e5e7eb' };
+      case 'testimonial':
+        return { ...baseStyles, backgroundColor: '#f9fafb', borderRadius: '8px', fontSize: '16px', color: '#374151' };
       case 'button':
         return { 
           ...baseStyles, 
@@ -90,6 +105,12 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
         return { height: '1px', backgroundColor: '#e5e7eb', width: '100%' };
       case 'spacer':
         return { height: '20px', width: '100%' };
+      case 'grid':
+        return { padding: '20px', backgroundColor: '#f9fafb', borderRadius: '8px' };
+      case 'video':
+        return { width: '100%' };
+      case 'icon':
+        return { ...baseStyles, textAlign: 'center' as const, color: '#3b82f6' };
       default:
         return baseStyles;
     }

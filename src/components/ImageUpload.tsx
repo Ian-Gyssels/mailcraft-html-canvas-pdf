@@ -14,6 +14,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageRemove
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragEnter = (e: React.DragEvent) => {
@@ -46,13 +47,22 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const handleFileUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      onImageUpload(result);
-    };
-    reader.readAsDataURL(file);
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    
+    try {
+      // Convert file to base64 data URL for display
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        onImageUpload(result);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setIsUploading(false);
+    }
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,16 +112,16 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             isDragging 
               ? 'border-blue-400 bg-blue-50' 
               : 'border-gray-300 hover:border-gray-400'
-          }`}
+          } ${isUploading ? 'opacity-50' : ''}`}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           onClick={handleClick}
         >
-          <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+          <Upload className={`w-8 h-8 mx-auto mb-2 text-gray-400 ${isUploading ? 'animate-spin' : ''}`} />
           <p className="text-sm text-gray-600">
-            Sleep een afbeelding hierheen of klik om te uploaden
+            {isUploading ? 'Uploading...' : 'Sleep een afbeelding hierheen of klik om te uploaden'}
           </p>
         </div>
       )}

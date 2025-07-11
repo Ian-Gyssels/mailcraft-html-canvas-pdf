@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import { TemplateComponent } from '../types/template';
 
@@ -28,10 +29,30 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
     onUpdateComponent({ content });
   };
 
+  const handleLinkChange = (link: string) => {
+    onUpdateComponent({ link });
+  };
+
   const handleStyleChange = (property: string, value: string) => {
     onUpdateComponent({
       styles: { ...component.styles, [property]: value }
     });
+  };
+
+  const handleGridColumnsChange = (columns: number) => {
+    onUpdateComponent({ gridColumns: columns });
+  };
+
+  const getContentPlaceholder = () => {
+    switch (component.type) {
+      case 'quote': return 'Voer je citaat in...';
+      case 'video': return 'YouTube video URL';
+      case 'list': return 'Item 1\nItem 2\nItem 3';
+      case 'testimonial': return 'Klantrecensie tekst...';
+      case 'card': return 'Kaart inhoud...';
+      case 'icon': return 'star';
+      default: return 'Voer inhoud in...';
+    }
   };
 
   return (
@@ -59,14 +80,60 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
               placeholder="Afbeelding URL"
               className="w-full px-3 py-2 border rounded-md text-sm"
             />
+          ) : component.type === 'video' ? (
+            <input
+              type="url"
+              value={component.content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="YouTube video URL"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+            />
+          ) : component.type === 'icon' ? (
+            <input
+              type="text"
+              value={component.content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="Lucide icon naam (bijv. star, heart)"
+              className="w-full px-3 py-2 border rounded-md text-sm"
+            />
           ) : (
             <Textarea
               value={component.content}
               onChange={(e) => handleContentChange(e.target.value)}
+              placeholder={getContentPlaceholder()}
               rows={3}
               className="text-sm"
             />
           )}
+        </div>
+      )}
+
+      {/* Link Editor for buttons and cards */}
+      {(component.type === 'button' || component.type === 'card') && (
+        <div>
+          <label className="text-sm font-medium mb-2 block">Link</label>
+          <Input
+            type="url"
+            value={component.link || ''}
+            onChange={(e) => handleLinkChange(e.target.value)}
+            placeholder="https://example.com"
+            className="text-sm"
+          />
+        </div>
+      )}
+
+      {/* Grid Columns for grid layout */}
+      {component.type === 'grid' && (
+        <div>
+          <label className="text-sm font-medium mb-2 block">Kolommen</label>
+          <Input
+            type="number"
+            min="1"
+            max="6"
+            value={component.gridColumns || 2}
+            onChange={(e) => handleGridColumnsChange(parseInt(e.target.value))}
+            className="text-sm"
+          />
         </div>
       )}
 
@@ -75,7 +142,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         <h5 className="text-sm font-medium">Styling</h5>
         
         {/* Font Size */}
-        {(component.type === 'text' || component.type === 'header' || component.type === 'button' || component.type === 'footer') && (
+        {(['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type)) && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Lettergrootte</label>
             <input
@@ -102,7 +169,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Background Color */}
-        {(component.type === 'button' || component.type === 'text' || component.type === 'header') && (
+        {(['button', 'text', 'header', 'card', 'quote', 'testimonial'].includes(component.type)) && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Achtergrondkleur</label>
             <input
@@ -115,7 +182,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Text Align */}
-        {(component.type === 'text' || component.type === 'header' || component.type === 'button' || component.type === 'footer') && (
+        {(['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type)) && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Uitlijning</label>
             <select
@@ -151,6 +218,20 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
               value={component.styles.height || ''}
               onChange={(e) => handleStyleChange('height', e.target.value)}
               placeholder="20px"
+              className="w-full px-2 py-1 border rounded text-xs"
+            />
+          </div>
+        )}
+
+        {/* Border Radius */}
+        {(['button', 'card', 'image'].includes(component.type)) && (
+          <div>
+            <label className="text-xs text-gray-600 mb-1 block">Border Radius</label>
+            <input
+              type="text"
+              value={component.styles.borderRadius || ''}
+              onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
+              placeholder="6px"
               className="w-full px-2 py-1 border rounded text-xs"
             />
           </div>
