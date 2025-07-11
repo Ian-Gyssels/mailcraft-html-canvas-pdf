@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import { Card } from '@/components/ui/card';
@@ -47,6 +46,70 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
       const newComponents = Array.from(template.components);
       const [reorderedItem] = newComponents.splice(source.index, 1);
       newComponents.splice(destination.index, 0, reorderedItem);
+      onTemplateUpdate({ ...template, components: newComponents });
+    } else if (source.droppableId === 'component-library' && destination.droppableId.startsWith('grid-')) {
+      // Add component to grid
+      const gridId = destination.droppableId.replace('grid-', '');
+      const newComponent: TemplateComponent = {
+        id: `component-${Date.now()}`,
+        type: result.draggableId as TemplateComponent['type'],
+        content: getDefaultContent(result.draggableId as TemplateComponent['type']),
+        styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
+      };
+
+      const newComponents = template.components.map(comp => {
+        if (comp.id === gridId) {
+          const gridItems = comp.gridItems || [];
+          gridItems.splice(destination.index, 0, newComponent);
+          return { ...comp, gridItems };
+        }
+        return comp;
+      });
+      onTemplateUpdate({ ...template, components: newComponents });
+    } else if (source.droppableId === 'component-library' && destination.droppableId.startsWith('card-')) {
+      // Add component to card
+      const cardId = destination.droppableId.replace('card-', '');
+      const newComponent: TemplateComponent = {
+        id: `component-${Date.now()}`,
+        type: result.draggableId as TemplateComponent['type'],
+        content: getDefaultContent(result.draggableId as TemplateComponent['type']),
+        styles: getDefaultStyles(result.draggableId as TemplateComponent['type'])
+      };
+
+      const newComponents = template.components.map(comp => {
+        if (comp.id === cardId) {
+          const gridItems = comp.gridItems || [];
+          gridItems.splice(destination.index, 0, newComponent);
+          return { ...comp, gridItems };
+        }
+        return comp;
+      });
+      onTemplateUpdate({ ...template, components: newComponents });
+    } else if (destination.droppableId.startsWith('grid-') && source.droppableId.startsWith('grid-')) {
+      // Reorder within grid
+      const gridId = destination.droppableId.replace('grid-', '');
+      const newComponents = template.components.map(comp => {
+        if (comp.id === gridId) {
+          const gridItems = Array.from(comp.gridItems || []);
+          const [reorderedItem] = gridItems.splice(source.index, 1);
+          gridItems.splice(destination.index, 0, reorderedItem);
+          return { ...comp, gridItems };
+        }
+        return comp;
+      });
+      onTemplateUpdate({ ...template, components: newComponents });
+    } else if (destination.droppableId.startsWith('card-') && source.droppableId.startsWith('card-')) {
+      // Reorder within card
+      const cardId = destination.droppableId.replace('card-', '');
+      const newComponents = template.components.map(comp => {
+        if (comp.id === cardId) {
+          const gridItems = Array.from(comp.gridItems || []);
+          const [reorderedItem] = gridItems.splice(source.index, 1);
+          gridItems.splice(destination.index, 0, reorderedItem);
+          return { ...comp, gridItems };
+        }
+        return comp;
+      });
       onTemplateUpdate({ ...template, components: newComponents });
     }
   };
@@ -117,22 +180,52 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
   };
 
   const handleUpdateComponent = (id: string, updates: Partial<TemplateComponent>) => {
-    const newComponents = template.components.map(comp => 
-      comp.id === id ? { ...comp, ...updates } : comp
-    );
+    const updateComponentRecursively = (components: TemplateComponent[]): TemplateComponent[] => {
+      return components.map(comp => {
+        if (comp.id === id) {
+          return { ...comp, ...updates };
+        }
+        if (comp.gridItems) {
+          return { ...comp, gridItems: updateComponentRecursively(comp.gridItems) };
+        }
+        return comp;
+      });
+    };
+
+    const newComponents = updateComponentRecursively(template.components);
     onTemplateUpdate({ ...template, components: newComponents });
   };
 
   const handleDeleteComponent = (id: string) => {
-    const newComponents = template.components.filter(comp => comp.id !== id);
+    const deleteComponentRecursively = (components: TemplateComponent[]): TemplateComponent[] => {
+      return components.filter(comp => comp.id !== id).map(comp => {
+        if (comp.gridItems) {
+          return { ...comp, gridItems: deleteComponentRecursively(comp.gridItems) };
+        }
+        return comp;
+      });
+    };
+
+    const newComponents = deleteComponentRecursively(template.components);
     onTemplateUpdate({ ...template, components: newComponents });
     if (selectedComponent === id) {
       setSelectedComponent(null);
     }
   };
 
+  const findComponentById = (components: TemplateComponent[], id: string): TemplateComponent | null => {
+    for (const comp of components) {
+      if (comp.id === id) return comp;
+      if (comp.gridItems) {
+        const found = findComponentById(comp.gridItems, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
   const selectedComponentData = selectedComponent 
-    ? template.components.find(c => c.id === selectedComponent) 
+    ? findComponentById(template.components, selectedComponent)
     : null;
 
   const handleExportPDF = async () => {

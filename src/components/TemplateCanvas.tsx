@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
-import { Trash2, Edit, ExternalLink } from 'lucide-react';
+import { Trash2, Edit, ExternalLink, Plus } from 'lucide-react';
 import { TemplateComponent } from '../types/template';
 import ImageUpload from './ImageUpload';
 import * as LucideIcons from 'lucide-react';
@@ -21,7 +20,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
   onUpdateComponent,
   onDeleteComponent
 }) => {
-  const renderComponent = (component: TemplateComponent) => {
+  const renderComponent = (component: TemplateComponent, isNested = false) => {
     const isSelected = component.id === selectedComponent;
     
     const baseStyles = {
@@ -102,46 +101,115 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
 
       case 'card':
         return (
-          <div 
-            style={baseStyles} 
-            className={`cursor-pointer border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${
-              component.link ? 'hover:bg-gray-50' : ''
-            }`}
-            onClick={handleClick}
-          >
-            <div className="flex items-start justify-between">
+          <Droppable droppableId={`card-${component.id}`} type="CARD_ITEM">
+            {(provided, snapshot) => (
               <div 
-                contentEditable
-                suppressContentEditableWarning={true}
-                onBlur={(e) => {
-                  onUpdateComponent(component.id, { content: e.target.textContent || '' });
-                }}
+                style={baseStyles} 
+                className={`cursor-pointer border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow min-h-[100px] ${
+                  component.link ? 'hover:bg-gray-50' : ''
+                } ${snapshot.isDraggingOver ? 'bg-blue-50 border-blue-300' : ''}`}
+                onClick={handleClick}
+                ref={provided.innerRef}
+                {...provided.droppableProps}
               >
-                {component.content}
+                <div className="flex items-start justify-between">
+                  <div 
+                    contentEditable
+                    suppressContentEditableWarning={true}
+                    onBlur={(e) => {
+                      onUpdateComponent(component.id, { content: e.target.textContent || '' });
+                    }}
+                  >
+                    {component.content}
+                  </div>
+                  {component.link && <ExternalLink className="w-4 h-4 text-gray-400 ml-2" />}
+                </div>
+                
+                {/* Render nested components */}
+                {component.gridItems?.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={`mt-2 ${snapshot.isDragging ? 'opacity-50' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectComponent(item.id);
+                        }}
+                      >
+                        {renderComponent(item, true)}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                
+                {(!component.gridItems || component.gridItems.length === 0) && (
+                  <div className="flex items-center justify-center h-16 text-gray-400 border-2 border-dashed border-gray-300 rounded mt-2">
+                    <Plus className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Sleep componenten hierheen</span>
+                  </div>
+                )}
+                
+                {provided.placeholder}
               </div>
-              {component.link && <ExternalLink className="w-4 h-4 text-gray-400 ml-2" />}
-            </div>
-          </div>
+            )}
+          </Droppable>
         );
 
       case 'grid':
         const gridColumns = component.gridColumns || 2;
         return (
-          <div 
-            style={{
-              ...baseStyles,
-              display: 'grid',
-              gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
-              gap: '1rem'
-            }} 
-            className="cursor-pointer border-2 border-dashed border-gray-300 p-4 rounded-lg min-h-[100px]"
-          >
-            {Array.from({ length: gridColumns }).map((_, index) => (
-              <div key={index} className="bg-gray-50 p-4 rounded border-2 border-dashed border-gray-200 text-center text-gray-500">
-                Grid Item {index + 1}
+          <Droppable droppableId={`grid-${component.id}`} type="GRID_ITEM">
+            {(provided, snapshot) => (
+              <div 
+                style={{
+                  ...baseStyles,
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+                  gap: '1rem'
+                }} 
+                className={`cursor-pointer border-2 border-dashed border-gray-300 p-4 rounded-lg min-h-[150px] ${
+                  snapshot.isDraggingOver ? 'bg-blue-50 border-blue-300' : ''
+                }`}
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+              >
+                {/* Render nested components */}
+                {component.gridItems?.map((item, index) => (
+                  <Draggable key={item.id} draggableId={item.id} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className={`${snapshot.isDragging ? 'opacity-50' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectComponent(item.id);
+                        }}
+                      >
+                        {renderComponent(item, true)}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                
+                {/* Fill empty grid cells */}
+                {Array.from({ length: Math.max(0, gridColumns - (component.gridItems?.length || 0)) }).map((_, index) => (
+                  <div key={`empty-${index}`} className="bg-gray-50 p-4 rounded border-2 border-dashed border-gray-200 flex items-center justify-center text-center text-gray-500 min-h-[80px]">
+                    <div>
+                      <Plus className="w-4 h-4 mx-auto mb-1" />
+                      <span className="text-xs">Grid Item</span>
+                    </div>
+                  </div>
+                ))}
+                
+                {provided.placeholder}
               </div>
-            ))}
-          </div>
+            )}
+          </Droppable>
         );
 
       case 'video':
@@ -238,7 +306,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
 
   return (
     <div className="min-h-[600px] bg-white">
-      <Droppable droppableId="template-canvas">
+      <Droppable droppableId="template-canvas" type="COMPONENT">
         {(provided, snapshot) => (
           <div
             {...provided.droppableProps}
@@ -271,7 +339,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
                       {renderComponent(component)}
                     </div>
                     
-                    {selectedComponent === component.id && (
+                    {selectedComponent === component.id && !snapshot.isDragging && (
                       <div className="absolute top-0 right-0 flex gap-1 bg-white shadow-lg rounded border p-1">
                         <button
                           onClick={() => onSelectComponent(component.id)}

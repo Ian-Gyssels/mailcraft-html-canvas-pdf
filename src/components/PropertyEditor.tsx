@@ -3,8 +3,10 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Search } from 'lucide-react';
 import { TemplateComponent } from '../types/template';
+import IconSelector from './IconSelector';
+import * as LucideIcons from 'lucide-react';
 
 interface PropertyEditorProps {
   component: TemplateComponent | null;
@@ -43,6 +45,10 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
     onUpdateComponent({ gridColumns: columns });
   };
 
+  const handleIconSelect = (iconName: string) => {
+    onUpdateComponent({ content: iconName });
+  };
+
   const getContentPlaceholder = () => {
     switch (component.type) {
       case 'quote': return 'Voer je citaat in...';
@@ -54,6 +60,17 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
       default: return 'Voer inhoud in...';
     }
   };
+
+  // Define which properties apply to which components
+  const hasContent = !['divider', 'spacer'].includes(component.type);
+  const hasLink = ['button', 'card'].includes(component.type);
+  const hasGridColumns = component.type === 'grid';
+  const hasFontSize = ['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type);
+  const hasColor = !['divider', 'spacer'].includes(component.type);
+  const hasBackgroundColor = ['button', 'text', 'header', 'card', 'quote', 'testimonial'].includes(component.type);
+  const hasTextAlign = ['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type);
+  const hasBorderRadius = ['button', 'card', 'image'].includes(component.type);
+  const hasHeight = component.type === 'spacer';
 
   return (
     <div className="space-y-4">
@@ -69,7 +86,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
       </div>
 
       {/* Content Editor */}
-      {component.type !== 'divider' && component.type !== 'spacer' && (
+      {hasContent && (
         <div>
           <label className="text-sm font-medium mb-2 block">Inhoud</label>
           {component.type === 'image' ? (
@@ -89,13 +106,24 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
               className="w-full px-3 py-2 border rounded-md text-sm"
             />
           ) : component.type === 'icon' ? (
-            <input
-              type="text"
-              value={component.content}
-              onChange={(e) => handleContentChange(e.target.value)}
-              placeholder="Lucide icon naam (bijv. star, heart)"
-              className="w-full px-3 py-2 border rounded-md text-sm"
-            />
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={component.content}
+                onChange={(e) => handleContentChange(e.target.value)}
+                placeholder="Lucide icon naam (bijv. star, heart)"
+                className="w-full px-3 py-2 border rounded-md text-sm"
+              />
+              <IconSelector
+                currentIcon={component.content}
+                onIconSelect={handleIconSelect}
+              >
+                <Button variant="outline" size="sm" className="w-full">
+                  <Search className="w-4 h-4 mr-2" />
+                  Selecteer icoon
+                </Button>
+              </IconSelector>
+            </div>
           ) : (
             <Textarea
               value={component.content}
@@ -108,8 +136,8 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         </div>
       )}
 
-      {/* Link Editor for buttons and cards */}
-      {(component.type === 'button' || component.type === 'card') && (
+      {/* Link Editor */}
+      {hasLink && (
         <div>
           <label className="text-sm font-medium mb-2 block">Link</label>
           <Input
@@ -122,8 +150,8 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         </div>
       )}
 
-      {/* Grid Columns for grid layout */}
-      {component.type === 'grid' && (
+      {/* Grid Columns */}
+      {hasGridColumns && (
         <div>
           <label className="text-sm font-medium mb-2 block">Kolommen</label>
           <Input
@@ -142,7 +170,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         <h5 className="text-sm font-medium">Styling</h5>
         
         {/* Font Size */}
-        {(['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type)) && (
+        {hasFontSize && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Lettergrootte</label>
             <input
@@ -156,7 +184,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Color */}
-        {component.type !== 'divider' && component.type !== 'spacer' && (
+        {hasColor && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Tekstkleur</label>
             <input
@@ -169,7 +197,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Background Color */}
-        {(['button', 'text', 'header', 'card', 'quote', 'testimonial'].includes(component.type)) && (
+        {hasBackgroundColor && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Achtergrondkleur</label>
             <input
@@ -182,7 +210,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Text Align */}
-        {(['text', 'header', 'button', 'footer', 'quote', 'testimonial', 'card', 'list'].includes(component.type)) && (
+        {hasTextAlign && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Uitlijning</label>
             <select
@@ -210,7 +238,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         </div>
 
         {/* Height for spacer */}
-        {component.type === 'spacer' && (
+        {hasHeight && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Hoogte</label>
             <input
@@ -224,7 +252,7 @@ const PropertyEditor: React.FC<PropertyEditorProps> = ({
         )}
 
         {/* Border Radius */}
-        {(['button', 'card', 'image'].includes(component.type)) && (
+        {hasBorderRadius && (
           <div>
             <label className="text-xs text-gray-600 mb-1 block">Border Radius</label>
             <input
