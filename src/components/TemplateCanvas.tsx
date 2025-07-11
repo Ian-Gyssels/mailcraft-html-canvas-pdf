@@ -3,6 +3,7 @@ import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Trash2, Edit } from 'lucide-react';
 import { TemplateComponent } from './TemplateEditor';
+import ImageUpload from './ImageUpload';
 
 interface TemplateCanvasProps {
   components: TemplateComponent[];
@@ -31,7 +32,15 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
     switch (component.type) {
       case 'header':
         return (
-          <h1 style={baseStyles} className="cursor-pointer">
+          <h1 
+            style={baseStyles} 
+            className="cursor-pointer"
+            contentEditable
+            suppressContentEditableWarning={true}
+            onBlur={(e) => {
+              onUpdateComponent(component.id, { content: e.target.textContent || '' });
+            }}
+          >
             {component.content}
           </h1>
         );
@@ -53,12 +62,17 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
       
       case 'image':
         return (
-          <img 
-            src={component.content} 
-            alt="Template afbeelding"
-            style={{ ...baseStyles, maxWidth: '100%', height: 'auto' }}
-            className="cursor-pointer"
-          />
+          <div style={{ outline: baseStyles.outline, outlineOffset: baseStyles.outlineOffset }}>
+            <ImageUpload
+              currentImage={component.content}
+              onImageUpload={(imageUrl) => {
+                onUpdateComponent(component.id, { content: imageUrl });
+              }}
+              onImageRemove={() => {
+                onUpdateComponent(component.id, { content: 'https://via.placeholder.com/400x200' });
+              }}
+            />
+          </div>
         );
       
       case 'button':
@@ -66,6 +80,11 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
           <button 
             style={baseStyles}
             className="cursor-pointer px-4 py-2 border-none"
+            contentEditable
+            suppressContentEditableWarning={true}
+            onBlur={(e) => {
+              onUpdateComponent(component.id, { content: e.target.textContent || '' });
+            }}
           >
             {component.content}
           </button>
@@ -79,7 +98,15 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
       
       case 'footer':
         return (
-          <footer style={baseStyles} className="cursor-pointer">
+          <footer 
+            style={baseStyles} 
+            className="cursor-pointer"
+            contentEditable
+            suppressContentEditableWarning={true}
+            onBlur={(e) => {
+              onUpdateComponent(component.id, { content: e.target.textContent || '' });
+            }}
+          >
             {component.content}
           </footer>
         );

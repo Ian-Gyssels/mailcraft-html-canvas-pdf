@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { Download, FileText, Save, Eye } from 'lucide-react';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import ComponentLibrary from './ComponentLibrary';
 import TemplateCanvas from './TemplateCanvas';
+import PropertyEditor from './PropertyEditor';
 import { exportToPDF, exportToHTML } from '../utils/exportUtils';
 
 export interface TemplateComponent {
@@ -100,6 +100,23 @@ const TemplateEditor = () => {
     }
   };
 
+  const handleUpdateComponent = (id: string, updates: Partial<TemplateComponent>) => {
+    setComponents(prev => prev.map(comp => 
+      comp.id === id ? { ...comp, ...updates } : comp
+    ));
+  };
+
+  const handleDeleteComponent = (id: string) => {
+    setComponents(prev => prev.filter(comp => comp.id !== id));
+    if (selectedComponent === id) {
+      setSelectedComponent(null);
+    }
+  };
+
+  const selectedComponentData = selectedComponent 
+    ? components.find(c => c.id === selectedComponent) 
+    : null;
+
   const handleExportPDF = async () => {
     await exportToPDF(components, templateName);
   };
@@ -170,14 +187,8 @@ const TemplateEditor = () => {
                 components={components}
                 selectedComponent={selectedComponent}
                 onSelectComponent={setSelectedComponent}
-                onUpdateComponent={(id, updates) => {
-                  setComponents(prev => prev.map(comp => 
-                    comp.id === id ? { ...comp, ...updates } : comp
-                  ));
-                }}
-                onDeleteComponent={(id) => {
-                  setComponents(prev => prev.filter(comp => comp.id !== id));
-                }}
+                onUpdateComponent={handleUpdateComponent}
+                onDeleteComponent={handleDeleteComponent}
               />
             </Card>
           </div>
@@ -185,20 +196,19 @@ const TemplateEditor = () => {
           <div className="col-span-3">
             <Card className="p-4 shadow-lg">
               <h3 className="font-semibold mb-4 text-gray-800">Eigenschappen</h3>
-              {selectedComponent ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-600">
-                    Component geselecteerd: {components.find(c => c.id === selectedComponent)?.type}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Eigenschappen editor komt hier...
-                  </p>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">
-                  Selecteer een component om eigenschappen te bewerken
-                </p>
-              )}
+              <PropertyEditor
+                component={selectedComponentData}
+                onUpdateComponent={(updates) => {
+                  if (selectedComponent) {
+                    handleUpdateComponent(selectedComponent, updates);
+                  }
+                }}
+                onDeleteComponent={() => {
+                  if (selectedComponent) {
+                    handleDeleteComponent(selectedComponent);
+                  }
+                }}
+              />
             </Card>
           </div>
         </div>
