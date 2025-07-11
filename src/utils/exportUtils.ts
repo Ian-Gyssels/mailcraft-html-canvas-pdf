@@ -1,7 +1,6 @@
-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { TemplateComponent } from '../components/TemplateEditor';
+import { TemplateComponent } from '../types/template';
 
 export const exportToPDF = async (components: TemplateComponent[], templateName: string) => {
   try {
