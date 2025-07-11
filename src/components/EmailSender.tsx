@@ -8,6 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '@/hooks/use-toast';
 import { Template } from '../types/template';
 import { useTranslation } from '../hooks/useTranslation';
+import emailjs from '@emailjs/browser';
+
+// Gmail/EmailJS Configuration
+const EMAILJS_SERVICE_ID = 'gmail'; // You'll need to configure this in EmailJS
+const EMAILJS_TEMPLATE_ID = 'template_email'; // You'll need to create this template
+const EMAILJS_PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY'; // Get this from EmailJS dashboard
 
 interface EmailSenderProps {
   template: Template;
@@ -21,8 +27,7 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
   const [emailData, setEmailData] = useState({
     to: '',
     subject: `Template: ${template.name}`,
-    message: 'Hi! I wanted to share this email template with you.',
-    webhookUrl: localStorage.getItem('email-webhook-url') || ''
+    message: 'Hi! I wanted to share this email template with you.'
   });
 
   const generateTemplateHTML = () => {
@@ -68,48 +73,57 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
   };
 
   const handleSendEmail = async () => {
-    if (!emailData.to || !emailData.webhookUrl) {
+    if (!emailData.to) {
       toast({
         title: "Error",
-        description: "Please enter recipient email and webhook URL",
+        description: "Please enter recipient email",
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    localStorage.setItem('email-webhook-url', emailData.webhookUrl);
 
     try {
       const templateHTML = generateTemplateHTML();
       
-      const response = await fetch(emailData.webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        mode: "no-cors",
-        body: JSON.stringify({
-          to: emailData.to,
+      // Initialize EmailJS (you only need to do this once in your app)
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      
+      // Send email using EmailJS
+      const result = await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        {
+          to_email: emailData.to,
           subject: emailData.subject,
           message: emailData.message,
-          templateHTML: templateHTML,
-          templateName: template.name,
-          timestamp: new Date().toISOString(),
-        }),
-      });
+          template_html: templateHTML,
+          template_name: template.name,
+          from_name: 'Template Builder App'
+        }
+      );
 
-      toast({
-        title: "Email Sent",
-        description: "The email request was sent successfully. Check your webhook service for delivery status.",
-      });
-      
-      setIsOpen(false);
+      if (result.status === 200) {
+        toast({
+          title: "Email Sent Successfully",
+          description: `Template sent to ${emailData.to}`,
+        });
+        
+        setIsOpen(false);
+        setEmailData({
+          to: '',
+          subject: `Template: ${template.name}`,
+          message: 'Hi! I wanted to share this email template with you.'
+        });
+      } else {
+        throw new Error('Failed to send email');
+      }
     } catch (error) {
       console.error("Error sending email:", error);
       toast({
         title: "Error",
-        description: "Failed to send email. Please check your webhook URL and try again.",
+        description: "Failed to send email. Please check your configuration and try again.",
         variant: "destructive",
       });
     } finally {
@@ -163,26 +177,21 @@ const EmailSender: React.FC<EmailSenderProps> = ({ template }) => {
             />
           </div>
           
-          <div>
-            <label className="text-sm font-medium mb-2 block flex items-center gap-1">
-              <Settings className="w-4 h-4" />
-              Webhook URL (Your Email Service)
-            </label>
-            <Input
-              type="url"
-              value={emailData.webhookUrl}
-              onChange={(e) => setEmailData(prev => ({ ...prev, webhookUrl: e.target.value }))}
-              placeholder="https://hooks.zapier.com/hooks/catch/..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Use Zapier, Make.com, or your own webhook service
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <p className="text-sm text-blue-700">
+              <strong>Setup Required:</strong> To use Gmail sending, you need to:
             </p>
+            <ol className="text-xs text-blue-600 mt-1 ml-4 list-decimal">
+              <li>Sign up at <a href="https://emailjs.com" target="_blank" className="underline">EmailJS.com</a></li>
+              <li>Connect your Gmail account</li>
+              <li>Update the configuration in EmailSender.tsx</li>
+            </ol>
           </div>
           
           <div className="flex gap-2">
             <Button onClick={handleSendEmail} disabled={isLoading} className="flex-1">
               <Send className="w-4 h-4 mr-2" />
-              {isLoading ? 'Sending...' : 'Send Email'}
+              {isLoading ? 'Sending...' : 'Send via Gmail'}
             </Button>
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { en } from '../locales/en';
 import { nl } from '../locales/nl';
 
@@ -10,19 +10,25 @@ const translations: Record<Locale, Translations> = {
   nl
 };
 
+// Global state for language
+let globalLocale: Locale = (localStorage.getItem('locale') as Locale) || 'nl';
+const subscribers = new Set<() => void>();
+
 export const useTranslation = () => {
-  const [locale, setLocale] = useState<Locale>(() => {
-    const stored = localStorage.getItem('locale');
-    return (stored as Locale) || 'nl';
-  });
+  const [locale, setLocaleState] = useState<Locale>(globalLocale);
 
   useEffect(() => {
-    localStorage.setItem('locale', locale);
-    // Force re-render of components when language changes
-    window.dispatchEvent(new Event('languagechange'));
-  }, [locale]);
+    const handleChange = () => {
+      setLocaleState(globalLocale);
+    };
+    
+    subscribers.add(handleChange);
+    return () => {
+      subscribers.delete(handleChange);
+    };
+  }, []);
 
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     const keys = key.split('.');
     let value: any = translations[locale];
     
@@ -32,11 +38,15 @@ export const useTranslation = () => {
     }
     
     return value || key;
-  };
+  }, [locale]);
 
-  const changeLanguage = (newLocale: Locale) => {
-    setLocale(newLocale);
-  };
+  const changeLanguage = useCallback((newLocale: Locale) => {
+    globalLocale = newLocale;
+    localStorage.setItem('locale', newLocale);
+    
+    // Notify all subscribers
+    subscribers.forEach(callback => callback());
+  }, []);
 
   return {
     t,
