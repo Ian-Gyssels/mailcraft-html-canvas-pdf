@@ -112,50 +112,58 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
     }
 
     // Reordering within grid
-    if (destination.droppableId.startsWith('grid-') && source.droppableId.startsWith('grid-')) {
-      const gridId = destination.droppableId.replace('grid-', '');
+    if (source.droppableId.startsWith('grid-') && destination.droppableId.startsWith('grid-')) {
+      const sourceGridId = source.droppableId.replace('grid-', '');
+      const destGridId = destination.droppableId.replace('grid-', '');
       
-      const updateGridReorder = (components: TemplateComponent[]): TemplateComponent[] => {
-        return components.map(comp => {
-          if (comp.id === gridId) {
-            const gridItems = Array.from(comp.gridItems || []);
-            const [reorderedItem] = gridItems.splice(source.index, 1);
-            gridItems.splice(destination.index, 0, reorderedItem);
-            return { ...comp, gridItems };
-          }
-          if (comp.gridItems) {
-            return { ...comp, gridItems: updateGridReorder(comp.gridItems) };
-          }
-          return comp;
-        });
-      };
+      if (sourceGridId === destGridId) {
+        // Same grid reordering
+        const updateGridReorder = (components: TemplateComponent[]): TemplateComponent[] => {
+          return components.map(comp => {
+            if (comp.id === sourceGridId) {
+              const gridItems = Array.from(comp.gridItems || []);
+              const [reorderedItem] = gridItems.splice(source.index, 1);
+              gridItems.splice(destination.index, 0, reorderedItem);
+              return { ...comp, gridItems };
+            }
+            if (comp.gridItems) {
+              return { ...comp, gridItems: updateGridReorder(comp.gridItems) };
+            }
+            return comp;
+          });
+        };
 
-      const newComponents = updateGridReorder(template.components);
-      onTemplateUpdate({ ...template, components: newComponents });
+        const newComponents = updateGridReorder(template.components);
+        onTemplateUpdate({ ...template, components: newComponents });
+      }
       return;
     }
 
     // Reordering within card
-    if (destination.droppableId.startsWith('card-') && source.droppableId.startsWith('card-')) {
-      const cardId = destination.droppableId.replace('card-', '');
+    if (source.droppableId.startsWith('card-') && destination.droppableId.startsWith('card-')) {
+      const sourceCardId = source.droppableId.replace('card-', '');
+      const destCardId = destination.droppableId.replace('card-', '');
       
-      const updateCardReorder = (components: TemplateComponent[]): TemplateComponent[] => {
-        return components.map(comp => {
-          if (comp.id === cardId) {
-            const gridItems = Array.from(comp.gridItems || []);
-            const [reorderedItem] = gridItems.splice(source.index, 1);
-            gridItems.splice(destination.index, 0, reorderedItem);
-            return { ...comp, gridItems };
-          }
-          if (comp.gridItems) {
-            return { ...comp, gridItems: updateCardReorder(comp.gridItems) };
-          }
-          return comp;
-        });
-      };
+      if (sourceCardId === destCardId) {
+        // Same card reordering
+        const updateCardReorder = (components: TemplateComponent[]): TemplateComponent[] => {
+          return components.map(comp => {
+            if (comp.id === sourceCardId) {
+              const gridItems = Array.from(comp.gridItems || []);
+              const [reorderedItem] = gridItems.splice(source.index, 1);
+              gridItems.splice(destination.index, 0, reorderedItem);
+              return { ...comp, gridItems };
+            }
+            if (comp.gridItems) {
+              return { ...comp, gridItems: updateCardReorder(comp.gridItems) };
+            }
+            return comp;
+          });
+        };
 
-      const newComponents = updateCardReorder(template.components);
-      onTemplateUpdate({ ...template, components: newComponents });
+        const newComponents = updateCardReorder(template.components);
+        onTemplateUpdate({ ...template, components: newComponents });
+      }
       return;
     }
   };
@@ -174,7 +182,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
       case 'card': return 'Kaart inhoud';
       case 'testimonial': return 'Geweldige service! Zeer tevreden met het resultaat.';
       case 'video': return 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-      case 'icon': return 'star';
+      case 'icon': return 'Star';
       case 'grid': return '';
       default: return '';
     }

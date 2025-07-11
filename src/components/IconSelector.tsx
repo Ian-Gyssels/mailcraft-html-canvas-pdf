@@ -16,9 +16,17 @@ const IconSelector: React.FC<IconSelectorProps> = ({ currentIcon, onIconSelect, 
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Get all available icons
+  // Get all available icons, excluding non-component exports
   const allIcons = Object.keys(LucideIcons).filter(
-    name => name !== 'createLucideIcon' && name !== 'Icon' && typeof (LucideIcons as any)[name] === 'function'
+    name => {
+      const item = (LucideIcons as any)[name];
+      return typeof item === 'function' && 
+             name !== 'createLucideIcon' && 
+             name !== 'Icon' &&
+             name !== 'default' &&
+             !name.startsWith('use') &&
+             name[0] === name[0].toUpperCase();
+    }
   );
 
   const filteredIcons = allIcons.filter(iconName =>
@@ -52,8 +60,10 @@ const IconSelector: React.FC<IconSelectorProps> = ({ currentIcon, onIconSelect, 
           </div>
           
           <div className="grid grid-cols-8 gap-2 max-h-96 overflow-y-auto p-2">
-            {filteredIcons.map((iconName) => {
-              const IconComponent = (LucideIcons as any)[iconName];
+            {filteredIcons.slice(0, 200).map((iconName) => {
+              const IconComponent = (LucideIcons as any)[iconName] as React.ComponentType<any>;
+              if (!IconComponent) return null;
+              
               return (
                 <Button
                   key={iconName}
@@ -68,6 +78,12 @@ const IconSelector: React.FC<IconSelectorProps> = ({ currentIcon, onIconSelect, 
               );
             })}
           </div>
+          
+          {filteredIcons.length === 0 && (
+            <div className="text-center text-gray-500 py-8">
+              Geen iconen gevonden voor "{searchTerm}"
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
