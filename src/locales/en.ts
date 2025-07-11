@@ -147,7 +147,7 @@ export const en = {
 
   // Template List
   templateList: {
-    title: 'Templates',
+    title: 'My Templates',
     createNew: 'Create New Template',
     noTemplates: 'No templates found',
     createdAt: 'Created',

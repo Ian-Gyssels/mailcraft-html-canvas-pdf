@@ -8,6 +8,9 @@ import PropertyEditor from './PropertyEditor';
 import TemplateHeader from './TemplateHeader';
 import { exportToPDF, exportToHTML } from '../utils/exportUtils';
 import { Template, TemplateComponent } from '../types/template';
+import { componentConfigs } from '../config/components';
+import { useTranslation } from '../hooks/useTranslation';
+import LanguageSelector from './LanguageSelector';
 
 interface TemplateEditorProps {
   template: Template;
@@ -22,6 +25,7 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
   onSave,
   onBackToList
 }) => {
+  const { t } = useTranslation();
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
 
   const handleDragEnd = (result: DropResult) => {
@@ -169,23 +173,8 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
   };
 
   const getDefaultContent = (type: string): string => {
-    switch (type) {
-      case 'text': return 'Typ hier je tekst...';
-      case 'header': return 'Header Titel';
-      case 'button': return 'Klik Hier';
-      case 'image': return 'https://via.placeholder.com/400x200';
-      case 'divider': return '';
-      case 'spacer': return '';
-      case 'footer': return 'Footer tekst';
-      case 'quote': return 'Dit is een inspirerend citaat';
-      case 'list': return 'Eerste item\nTweede item\nDerde item';
-      case 'card': return 'Kaart inhoud';
-      case 'testimonial': return 'Geweldige service! Zeer tevreden met het resultaat.';
-      case 'video': return 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-      case 'icon': return 'Star';
-      case 'grid': return '';
-      default: return '';
-    }
+    const config = componentConfigs[type];
+    return config ? config.defaultContent : '';
   };
 
   const getDefaultStyles = (type: string) => {
@@ -309,7 +298,10 @@ const TemplateEditor: React.FC<TemplateEditorProps> = ({
         <div className="max-w-7xl mx-auto grid grid-cols-12 gap-6 p-6">
           <div className="col-span-3">
             <Card className="p-4 shadow-lg">
-              <h3 className="font-semibold mb-4 text-gray-800">Componenten</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-gray-800">{t('componentLibrary.title') || 'Componenten'}</h3>
+                <LanguageSelector />
+              </div>
               <ComponentLibrary />
             </Card>
           </div>

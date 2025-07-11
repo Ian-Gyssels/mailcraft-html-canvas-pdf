@@ -4,6 +4,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, FileText, Trash2, Calendar, Edit } from 'lucide-react';
 import { Template } from '../types/template';
+import { useTranslation } from '../hooks/useTranslation';
+import LanguageSelector from './LanguageSelector';
 
 interface TemplateListProps {
   templates: Template[];
@@ -18,6 +20,7 @@ const TemplateList: React.FC<TemplateListProps> = ({
   onEditTemplate,
   onDeleteTemplate
 }) => {
+  const { t } = useTranslation();
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('nl-NL', {
       year: 'numeric',
@@ -33,29 +36,32 @@ const TemplateList: React.FC<TemplateListProps> = ({
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Mijn Templates</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('templateList.title')}</h1>
             <p className="text-gray-600">Beheer je email templates</p>
           </div>
-          <Button 
-            onClick={onCreateNew}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nieuwe Template
-          </Button>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <Button 
+              onClick={onCreateNew}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('templateList.createNew')}
+            </Button>
+          </div>
         </div>
 
         {templates.length === 0 ? (
           <Card className="p-12 text-center">
             <FileText className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Geen templates gevonden</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('templateList.noTemplates')}</h3>
             <p className="text-gray-500 mb-6">Maak je eerste email template om te beginnen</p>
             <Button 
               onClick={onCreateNew}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Eerste Template Maken
+              {t('templateList.createNew')}
             </Button>
           </Card>
         ) : (
@@ -83,7 +89,7 @@ const TemplateList: React.FC<TemplateListProps> = ({
                     className="flex-1"
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Bewerken
+                    {t('templateList.edit')}
                   </Button>
                   <Button 
                     variant="destructive" 

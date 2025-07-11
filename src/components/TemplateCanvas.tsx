@@ -4,6 +4,7 @@ import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { Trash2, Edit } from 'lucide-react';
 import { TemplateComponent } from '../types/template';
 import ComponentRenderer from './canvas/ComponentRenderer';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface TemplateCanvasProps {
   components: TemplateComponent[];
@@ -20,6 +21,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
   onUpdateComponent,
   onDeleteComponent
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-[600px] bg-white">
       <Droppable droppableId="template-canvas">
@@ -34,7 +36,7 @@ const TemplateCanvas: React.FC<TemplateCanvasProps> = ({
           >
             {components.length === 0 && (
               <div className="flex items-center justify-center h-full text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
-                <p>Sleep componenten hierheen om je template te maken</p>
+                <p>{t('templateCanvas.dragComponentsHere')}</p>
               </div>
             )}
             

@@ -147,8 +147,8 @@ export const nl = {
 
   // Template List
   templateList: {
-    title: 'Templates',
-    createNew: 'Nieuwe Template Maken',
+    title: 'Mijn Templates',
+    createNew: 'Nieuwe Template',
     noTemplates: 'Geen templates gevonden',
     createdAt: 'Gemaakt',
     updatedAt: 'Bijgewerkt',
